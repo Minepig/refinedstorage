@@ -5,6 +5,7 @@ import com.refinedmods.refinedstorage.api.network.node.ICoverable;
 import com.refinedmods.refinedstorage.api.util.Action;
 import com.refinedmods.refinedstorage.api.util.IComparer;
 import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverManager;
+import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverType;
 import com.refinedmods.refinedstorage.blockentity.DestructorBlockEntity;
 import com.refinedmods.refinedstorage.blockentity.config.IComparable;
 import com.refinedmods.refinedstorage.blockentity.config.IType;
@@ -18,6 +19,7 @@ import com.refinedmods.refinedstorage.item.UpgradeItem;
 import com.refinedmods.refinedstorage.util.LevelUtils;
 import com.refinedmods.refinedstorage.util.StackUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -368,7 +370,10 @@ public class DestructorNetworkNode extends NetworkNode implements IComparable, I
     }
 
 
-
+    @Override
+    public boolean canConduct(Direction direction) {
+        return (getDirection() != direction) && (!coverManager.hasCover(direction) || coverManager.getCover(direction).getType() == CoverType.HOLLOW);
+    }
 
 
 

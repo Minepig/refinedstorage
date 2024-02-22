@@ -27,6 +27,7 @@ import java.util.UUID;
 
 public class FluidGridHandler implements IFluidGridHandler {
     private final INetwork network;
+//    private final Logger LOGGER = LogManager.getLogger(FluidGridHandler.class);
 
     public FluidGridHandler(INetwork network) {
         this.network = network;
@@ -43,9 +44,16 @@ public class FluidGridHandler implements IFluidGridHandler {
         NetworkUtils.extractBucketFromPlayerInventoryOrNetwork(player, network, bucket -> bucket.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null).ifPresent(fluidHandler -> {
             network.getFluidStorageTracker().changed(player, stack.copy());
 
-            FluidStack extracted = network.extractFluid(stack, FluidAttributes.BUCKET_VOLUME, Action.PERFORM);
-
-            fluidHandler.fill(extracted, IFluidHandler.FluidAction.EXECUTE);
+            // Simulate first to avoid throwing fluid into void
+            FluidStack extracted = network.extractFluid(stack, FluidAttributes.BUCKET_VOLUME, Action.SIMULATE);
+            if (fluidHandler.fill(extracted, IFluidHandler.FluidAction.SIMULATE) != 0) {
+                extracted = network.extractFluid(stack, FluidAttributes.BUCKET_VOLUME, Action.PERFORM);
+                fluidHandler.fill(extracted, IFluidHandler.FluidAction.EXECUTE);
+            } // else {
+//                @Nullable ResourceLocation fluid = ForgeRegistries.FLUIDS.getKey(extracted.getFluid());
+//                String fluid_name = (fluid == null) ? "null" : fluid.toString();
+//                LOGGER.info("Failed to fill bucket with " + fluid_name);
+//            }
 
             if (shift) {
                 if (!player.getInventory().add(fluidHandler.getContainer().copy())) {

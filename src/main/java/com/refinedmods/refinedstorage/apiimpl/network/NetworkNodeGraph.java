@@ -10,6 +10,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -21,6 +23,8 @@ public class NetworkNodeGraph implements INetworkNodeGraph {
     private final Set<Consumer<INetwork>> actions = new HashSet<>();
     private Set<INetworkNodeGraphEntry> entries = Sets.newConcurrentHashSet();
     private boolean invalidating = false;
+
+    private static final Logger LOGGER = LogManager.getLogger(NetworkNodeGraph.class);
 
     public NetworkNodeGraph(INetwork network) {
         this.network = network;
@@ -34,6 +38,7 @@ public class NetworkNodeGraph implements INetworkNodeGraph {
 
         INetworkNode originNode = NetworkUtils.getNodeFromBlockEntity(level.getBlockEntity(origin));
         if (originNode instanceof INetworkNodeVisitor) {
+//            LOGGER.info("Invalidating start from origin node [" + origin.toShortString() + "]");
             ((INetworkNodeVisitor) originNode).visit(operator);
         }
 
@@ -112,20 +117,31 @@ public class NetworkNodeGraph implements INetworkNodeGraph {
 
         @Override
         public void visit(Operator operator) {
+//            LOGGER.info("Invalidating visit [" + pos.toShortString() + "]");
             if (node instanceof INetworkNodeVisitor) {
                 ((INetworkNodeVisitor) node).visit(operator);
-            } else {
-                for (Direction checkSide : Direction.values()) {
-                    if (checkSide != side) { // Avoid going backward
-                        INetworkNode nodeOnSide = NetworkUtils.getNodeFromBlockEntity(blockEntity);
-                        if (nodeOnSide == node) {
-                            BlockPos relativePos = pos.relative(checkSide);
-                            if (level.isLoaded(relativePos)) {
-                                operator.apply(level, relativePos, checkSide.getOpposite());
-                            }
-                        }
-                    }
+                return;
+            }
+
+            LOGGER.info("I don't think it will reach here.");
+            for (Direction checkSide : Direction.values()) {
+                if (checkSide == side) { continue; } // Avoid going backward
+
+                INetworkNode nodeOnSide = NetworkUtils.getNodeFromBlockEntity(blockEntity);
+                if (nodeOnSide != node) { continue; }
+
+                BlockPos relativePos = pos.relative(checkSide);
+
+                if (!level.isLoaded(relativePos)) { continue; }
+
+                INetworkNode oppositeNode = NetworkUtils.getNodeFromBlockEntity(level.getBlockEntity(relativePos));
+
+                if (oppositeNode == null) { continue; }
+
+                if (node.canConduct(checkSide) && oppositeNode.canReceive(checkSide.getOpposite())) {
+                    operator.apply(level, relativePos, checkSide.getOpposite());
                 }
+
             }
         }
     }

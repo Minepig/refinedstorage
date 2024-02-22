@@ -3,6 +3,7 @@ package com.refinedmods.refinedstorage.apiimpl.network.node;
 import com.refinedmods.refinedstorage.api.network.INetwork;
 import com.refinedmods.refinedstorage.api.network.INetworkNodeVisitor;
 import com.refinedmods.refinedstorage.api.network.node.INetworkNode;
+import com.refinedmods.refinedstorage.util.NetworkUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -111,7 +112,13 @@ public class RootNetworkNode implements INetworkNode, INetworkNodeVisitor {
             if (!level.isLoaded(relativePos)) {
                 continue;
             }
-            operator.apply(level, relativePos, facing.getOpposite());
+            INetworkNode oppositeNode = NetworkUtils.getNodeFromBlockEntity(level.getBlockEntity(relativePos));
+            if (oppositeNode == null) {
+                continue;
+            }
+            if (canConduct(facing) && oppositeNode.canReceive(facing.getOpposite())) {
+                operator.apply(level, relativePos, facing.getOpposite());
+            }
         }
     }
 }

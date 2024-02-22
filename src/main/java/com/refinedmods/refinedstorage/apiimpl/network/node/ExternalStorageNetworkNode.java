@@ -14,6 +14,7 @@ import com.refinedmods.refinedstorage.api.storage.externalstorage.IExternalStora
 import com.refinedmods.refinedstorage.api.util.IComparer;
 import com.refinedmods.refinedstorage.apiimpl.API;
 import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverManager;
+import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverType;
 import com.refinedmods.refinedstorage.apiimpl.storage.cache.FluidStorageCache;
 import com.refinedmods.refinedstorage.apiimpl.storage.cache.ItemStorageCache;
 import com.refinedmods.refinedstorage.inventory.fluid.FluidInventory;
@@ -345,4 +346,10 @@ public class ExternalStorageNetworkNode extends NetworkNode implements IStorageP
 
         return tag;
     }
+
+    @Override
+    public boolean canConduct(Direction direction) {
+        return (getDirection() != direction) && (!coverManager.hasCover(direction) || coverManager.getCover(direction).getType() == CoverType.HOLLOW);
+    }
+
 }

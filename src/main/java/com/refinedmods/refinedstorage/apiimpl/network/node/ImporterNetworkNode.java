@@ -5,6 +5,7 @@ import com.refinedmods.refinedstorage.api.network.node.ICoverable;
 import com.refinedmods.refinedstorage.api.util.Action;
 import com.refinedmods.refinedstorage.api.util.IComparer;
 import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverManager;
+import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverType;
 import com.refinedmods.refinedstorage.inventory.fluid.FluidInventory;
 import com.refinedmods.refinedstorage.inventory.item.BaseItemHandler;
 import com.refinedmods.refinedstorage.inventory.item.UpgradeItemHandler;
@@ -19,6 +20,7 @@ import com.refinedmods.refinedstorage.blockentity.config.IWhitelistBlacklist;
 import com.refinedmods.refinedstorage.util.StackUtils;
 import com.refinedmods.refinedstorage.util.LevelUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -242,4 +244,10 @@ public class ImporterNetworkNode extends NetworkNode implements IComparable, IWh
     public CoverManager getCoverManager() {
         return coverManager;
     }
+
+    @Override
+    public boolean canConduct(Direction direction) {
+        return (getDirection() != direction) && (!coverManager.hasCover(direction) || coverManager.getCover(direction).getType() == CoverType.HOLLOW);
+    }
+
 }

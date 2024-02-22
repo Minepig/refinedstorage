@@ -81,6 +81,6 @@ public class WirelessTransmitterNetworkNode extends NetworkNode implements IWire
 
     @Override
     public void visit(Operator operator) {
-        operator.apply(level, pos.relative(Direction.DOWN), Direction.UP);
+        operator.apply(level, pos.relative(getDirection()), getDirection().getOpposite());
     }
 }

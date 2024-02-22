@@ -6,6 +6,7 @@ import com.refinedmods.refinedstorage.api.util.Action;
 import com.refinedmods.refinedstorage.api.util.IComparer;
 import com.refinedmods.refinedstorage.apiimpl.API;
 import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverManager;
+import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverType;
 import com.refinedmods.refinedstorage.blockentity.ExporterBlockEntity;
 import com.refinedmods.refinedstorage.blockentity.config.IComparable;
 import com.refinedmods.refinedstorage.blockentity.config.IType;
@@ -18,6 +19,7 @@ import com.refinedmods.refinedstorage.item.UpgradeItem;
 import com.refinedmods.refinedstorage.util.StackUtils;
 import com.refinedmods.refinedstorage.util.LevelUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -331,6 +333,10 @@ public class ExporterNetworkNode extends NetworkNode implements IComparable, ITy
         return coverManager;
     }
 
+    @Override
+    public boolean canConduct(Direction direction) {
+        return (getDirection() != direction) && (!coverManager.hasCover(direction) || coverManager.getCover(direction).getType() == CoverType.HOLLOW);
+    }
 
 
 

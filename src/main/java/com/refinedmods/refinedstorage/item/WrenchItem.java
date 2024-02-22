@@ -5,9 +5,13 @@ import com.refinedmods.refinedstorage.api.network.INetwork;
 import com.refinedmods.refinedstorage.api.network.node.ICoverable;
 import com.refinedmods.refinedstorage.api.network.node.INetworkNode;
 import com.refinedmods.refinedstorage.api.network.security.Permission;
+import com.refinedmods.refinedstorage.api.util.Action;
+import com.refinedmods.refinedstorage.apiimpl.network.NetworkNodeGraph;
+import com.refinedmods.refinedstorage.apiimpl.network.node.CrafterNetworkNode;
 import com.refinedmods.refinedstorage.apiimpl.network.node.cover.Cover;
 import com.refinedmods.refinedstorage.util.NetworkUtils;
 import com.refinedmods.refinedstorage.util.LevelUtils;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -15,6 +19,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.items.ItemHandlerHelper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class WrenchItem extends Item {
     public WrenchItem() {
@@ -49,6 +55,20 @@ public class WrenchItem extends Item {
         }
 
         ctx.getLevel().setBlockAndUpdate(ctx.getClickedPos(), state.rotate(ctx.getLevel(), ctx.getClickedPos(), Rotation.CLOCKWISE_90));
+        if (node instanceof ICoverable || node instanceof CrafterNetworkNode) {
+            node.markDirty();
+            network = node.getNetwork();
+            if (network != null) {
+                network.getNodeGraph().invalidate(Action.PERFORM, node.getNetwork().getLevel(), node.getNetwork().getPosition());
+            }
+            for (Direction facing : Direction.values()) {
+                node = NetworkUtils.getNodeFromBlockEntity(ctx.getLevel().getBlockEntity(ctx.getClickedPos().relative(facing)));
+
+                if (node != null && node.getNetwork() != null && !node.getNetwork().equals(network)) {
+                    node.getNetwork().getNodeGraph().invalidate(Action.PERFORM, node.getNetwork().getLevel(), node.getNetwork().getPosition());
+                }
+            }
+        }
 
         return InteractionResult.CONSUME;
     }

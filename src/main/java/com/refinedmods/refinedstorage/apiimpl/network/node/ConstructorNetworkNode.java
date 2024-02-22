@@ -5,6 +5,7 @@ import com.refinedmods.refinedstorage.api.network.node.ICoverable;
 import com.refinedmods.refinedstorage.api.util.Action;
 import com.refinedmods.refinedstorage.api.util.IComparer;
 import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverManager;
+import com.refinedmods.refinedstorage.apiimpl.network.node.cover.CoverType;
 import com.refinedmods.refinedstorage.blockentity.ConstructorBlockEntity;
 import com.refinedmods.refinedstorage.blockentity.config.IComparable;
 import com.refinedmods.refinedstorage.blockentity.config.IType;
@@ -335,5 +336,10 @@ public class ConstructorNetworkNode extends NetworkNode implements IComparable, 
         public FluidStack drain(int maxDrain, FluidAction action) {
             return network.extractFluid(resource, resource.getAmount(), compare, action == FluidAction.SIMULATE ? Action.SIMULATE : Action.PERFORM);
         }
+    }
+
+    @Override
+    public boolean canConduct(Direction direction) {
+        return (getDirection() != direction) && (!coverManager.hasCover(direction) || coverManager.getCover(direction).getType() == CoverType.HOLLOW);
     }
 }

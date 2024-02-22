@@ -7,6 +7,7 @@ import com.refinedmods.refinedstorage.api.autocrafting.ICraftingPatternProvider;
 import com.refinedmods.refinedstorage.api.network.INetwork;
 import com.refinedmods.refinedstorage.api.network.node.INetworkNode;
 import com.refinedmods.refinedstorage.apiimpl.API;
+import com.refinedmods.refinedstorage.block.CrafterBlock;
 import com.refinedmods.refinedstorage.inventory.item.BaseItemHandler;
 import com.refinedmods.refinedstorage.inventory.item.UpgradeItemHandler;
 import com.refinedmods.refinedstorage.inventory.item.validator.PatternItemValidator;
@@ -457,7 +458,13 @@ public class CrafterNetworkNode extends NetworkNode implements ICraftingPatternC
         }
     }
 
-
+    @Override
+    public boolean canConduct(Direction direction) {
+        if (getDirection() != direction) {
+            return true;
+        }
+        return this.level.getBlockState(this.pos.relative(direction)).getBlock() instanceof CrafterBlock;
+    }
 
 
 }

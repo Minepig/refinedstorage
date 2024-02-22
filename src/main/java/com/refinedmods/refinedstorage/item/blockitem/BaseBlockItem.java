@@ -2,8 +2,10 @@ package com.refinedmods.refinedstorage.item.blockitem;
 
 import com.refinedmods.refinedstorage.block.BaseBlock;
 import com.refinedmods.refinedstorage.block.BlockDirection;
+import com.refinedmods.refinedstorage.block.CableBlock;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BaseBlockItem extends BlockItem {
@@ -25,6 +27,9 @@ public class BaseBlockItem extends BlockItem {
                 context.getClickedPos(),
                 context.getPlayer()
             )));
+        }
+        if (block instanceof CableBlock cable) {
+            cable.updateConnectionPostPlacement(context.getLevel().getBlockState(context.getClickedPos()), context.getLevel(), context.getClickedPos());
         }
 
         return result;

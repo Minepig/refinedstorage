@@ -10,6 +10,7 @@ import com.refinedmods.refinedstorage.blockentity.CableBlockEntity;
 import com.refinedmods.refinedstorage.capability.NetworkNodeProxyCapability;
 import com.refinedmods.refinedstorage.render.ConstantsCable;
 import com.refinedmods.refinedstorage.util.BlockUtils;
+import com.refinedmods.refinedstorage.util.NetworkUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -141,25 +142,35 @@ public class CableBlock extends NetworkNodeBlock implements SimpleWaterloggedBlo
         // This is already checked in hasNode().
         // But since rotate() doesn't invalidate that connection, we need to do it here.
         // Ideally, this code would be in rotate(). But rotate() doesn't have any data about the position and world, so we need to do it here.
-        level.setBlockAndUpdate(pos, getState(level.getBlockState(pos), level, pos));
 
+        // update node direction first
+        super.onDirectionChanged(level, pos, newDirection);
 
-        //when rotating skip rotations blocked by covers
+        // when rotating skip rotations blocked by covers
         BlockDirection dir = getDirection();
         if (dir != BlockDirection.NONE) {
             if (isSideCovered(level.getBlockEntity(pos), newDirection)) {
-                BlockState newState = rotate(level.getBlockState(pos), Rotation.CLOCKWISE_90);
-                level.setBlockAndUpdate(pos, newState);
+                // calling setBlock will invoke onDirectionChanged recursively, updating node direction again
+                level.setBlockAndUpdate(pos, rotate(level.getBlockState(pos), Rotation.CLOCKWISE_90));
             }
         }
+        // now the node direction should be up-to-date, and we can check connections
+        // the blockstate may be rotated multiple time so get again from level
+        // well actually this will be executed multiple times so emmm...
+        level.setBlockAndUpdate(pos, getState(level.getBlockState(pos), level, pos));
 
-        super.onDirectionChanged(level, pos, newDirection);
+        // after returned from the last onRemove a block update will notify neighbors
+        // by that time the direction should be correct
     }
 
     @Override
     public void neighborChanged(BlockState state, Level level, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving) {
         super.neighborChanged(state, level, pos, blockIn, fromPos, isMoving);
         level.setBlockAndUpdate(pos, getState(level.getBlockState(pos), level, pos));
+    }
+
+    public void updateConnectionPostPlacement(BlockState state, Level level, BlockPos pos) {
+        level.setBlockAndUpdate(pos, getState(state, level, pos));
     }
 
     @Nullable
@@ -190,15 +201,13 @@ public class CableBlock extends NetworkNodeBlock implements SimpleWaterloggedBlo
         if (getDirection() != BlockDirection.NONE && state.getValue(getDirection().getProperty()).getOpposite() == direction) {
             return false;
         }
-
-        BlockEntity blockEntity = world.getBlockEntity(pos);
-        if (blockEntity == null) {
+        INetworkNode node = NetworkUtils.getNodeFromBlockEntity(world.getBlockEntity(pos));
+        if (node == null || !node.canReceive(direction)){
             return false;
         }
+        node = NetworkUtils.getNodeFromBlockEntity(world.getBlockEntity(pos.relative(direction)));
 
-        return blockEntity.getCapability(NetworkNodeProxyCapability.NETWORK_NODE_PROXY_CAPABILITY, direction).isPresent()
-            && !isSideCovered(blockEntity, direction)
-            && !isSideCovered(world.getBlockEntity(pos.relative(direction)), direction.getOpposite());
+        return node == null || node.canConduct(direction.getOpposite());
     }
 
     private boolean isSideCovered(BlockEntity blockEntity, Direction direction) {

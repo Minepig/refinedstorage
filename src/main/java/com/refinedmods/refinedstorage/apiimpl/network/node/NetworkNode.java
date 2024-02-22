@@ -262,7 +262,7 @@ public abstract class NetworkNode implements INetworkNode, INetworkNodeVisitor {
     }
 
     public Direction getDirection() {
-        if (direction == null) {
+        if (direction == null || level.isClientSide()) {
             BlockState state = level.getBlockState(pos);
 
             if (state.getBlock() instanceof BaseBlock baseBlock) {
@@ -281,6 +281,7 @@ public abstract class NetworkNode implements INetworkNode, INetworkNodeVisitor {
     }
 
     public void onDirectionChanged(Direction direction) {
+        LOGGER.info("direction change from " + this.direction + " to " + direction + " at " + this.pos.toShortString());
         this.direction = direction;
     }
 

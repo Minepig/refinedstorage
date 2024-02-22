@@ -30,7 +30,7 @@ import net.minecraftforge.network.NetworkHooks;
 public class DetectorBlock extends ColoredNetworkBlock {
     public static final BooleanProperty POWERED = BooleanProperty.create("powered");
 
-    private static final VoxelShape SHAPE = box(0, 0, 0, 16, 5, 16);
+    private static final VoxelShape SHAPE = box(0, 0, 0, 16, 16, 16);
 
     public DetectorBlock() {
         super(BlockUtils.DEFAULT_ROCK_PROPERTIES);
