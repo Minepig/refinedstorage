@@ -281,7 +281,7 @@ public abstract class NetworkNode implements INetworkNode, INetworkNodeVisitor {
     }
 
     public void onDirectionChanged(Direction direction) {
-        LOGGER.info("direction change from " + this.direction + " to " + direction + " at " + this.pos.toShortString());
+//        LOGGER.info("direction change from " + this.direction + " to " + direction + " at " + this.pos.toShortString());
         this.direction = direction;
     }
 
